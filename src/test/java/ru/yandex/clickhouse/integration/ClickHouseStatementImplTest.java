@@ -1,4 +1,5 @@
 package ru.yandex.clickhouse.integration;
+
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -7,6 +8,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -40,7 +42,7 @@ public class ClickHouseStatementImplTest {
     @BeforeTest
     public void setUp() throws Exception {
         ClickHouseProperties properties = new ClickHouseProperties();
-        dataSource = new ClickHouseDataSource("jdbc:clickhouse://localhost:8123", properties);
+        dataSource = new ClickHouseDataSource("jdbc:clickhouse://10.158.2.15:8123", properties);
         connection = dataSource.getConnection();
     }
 
@@ -102,10 +104,10 @@ public class ClickHouseStatementImplTest {
         rs.next();
         Object smallUInt32 = rs.getObject(1);
         Assert.assertTrue(smallUInt32 instanceof Long);
-        Assert.assertEquals(((Long)smallUInt32).longValue(), 10);
+        Assert.assertEquals(((Long) smallUInt32).longValue(), 10);
         Object bigUInt32 = rs.getObject(2);
         Assert.assertTrue(bigUInt32 instanceof Long);
-        Assert.assertEquals(((Long)bigUInt32).longValue(), 4294967286L);
+        Assert.assertEquals(((Long) bigUInt32).longValue(), 4294967286L);
     }
 
     @Test
@@ -115,7 +117,7 @@ public class ClickHouseStatementImplTest {
         rs.next();
         Object smallUInt64 = rs.getObject(1);
         Assert.assertTrue(smallUInt64 instanceof BigInteger);
-        Assert.assertEquals(((BigInteger)smallUInt64).intValue(), 10);
+        Assert.assertEquals(((BigInteger) smallUInt64).intValue(), 10);
         Object bigUInt64 = rs.getObject(2);
         Assert.assertTrue(bigUInt64 instanceof BigInteger);
         Assert.assertEquals(bigUInt64, new BigInteger("18446744073709551606"));
@@ -143,6 +145,20 @@ public class ClickHouseStatementImplTest {
         Assert.assertEquals(userName, "User");
         Assert.assertEquals(groupName, "Group");
     }
+
+
+    @Test
+    public void testTable() throws SQLException {
+
+        ClickHouseStatement stmt=connection.createStatement();
+        ResultSet rs = stmt.executeQuery("select id,ipi_registration_id,ordered_date from test3 where ordered_date is not  null limit 2");
+        rs.next();
+        Timestamp rs1 = rs.getTimestamp("ordered_date");
+
+
+        boolean execute = stmt.execute("insert into test3 value ('111','3333','2015/12/31 08:33:31.000')");
+    }
+
 
     @Test
     public void testResultSetWithExtremes() throws SQLException {
@@ -245,7 +261,7 @@ public class ClickHouseStatementImplTest {
         assertNull("An exception happened while the query was being executed", exceptionAtomicReference.get());
 
 
-        assertTrue("The query isn't being executed. It seems very strange", checkQuery(queryId, true,10));
+        assertTrue("The query isn't being executed. It seems very strange", checkQuery(queryId, true, 10));
         firstStatement.cancel();
         assertTrue("The query is still being executed", checkQuery(queryId, false, 10));
 
@@ -281,7 +297,7 @@ public class ClickHouseStatementImplTest {
         assertTrue(String.format("it's actually very strange. It seems the query hasn't been executed in %s seconds", timeout), countDownLatch.await(timeout, TimeUnit.SECONDS));
         assertNull("An exception happened while the query was being executed", exceptionAtomicReference.get());
 
-        assertTrue("The query isn't being executed. It seems very strange", checkQuery(queryId, true,10));
+        assertTrue("The query isn't being executed. It seems very strange", checkQuery(queryId, true, 10));
         firstStatement.cancel();
         assertTrue("The query is still being executed", checkQuery(queryId, false, 10));
 
@@ -297,7 +313,7 @@ public class ClickHouseStatementImplTest {
         Assert.assertEquals(rs.getMetaData().getColumnType(1), Types.ARRAY);
         Assert.assertEquals(rs.getMetaData().getColumnTypeName(1), "Array(UInt8)");
         Assert.assertEquals(rs.getMetaData().getColumnClassName(1),
-            Array.class.getCanonicalName());
+                Array.class.getCanonicalName());
         Array arr = (Array) rs.getObject(1);
         Assert.assertEquals(((int[]) arr.getArray())[0], 42);
         Assert.assertEquals(((int[]) arr.getArray())[1], 23);

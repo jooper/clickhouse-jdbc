@@ -184,7 +184,7 @@ public enum ClickHouseQueryParam implements DriverPropertyCreator {
 
     PARALLEL_REPLICA_OFFSET("parallel_replica_offset", null, Long.class, ""),
 
-    PASSWORD("password", null, String.class, "user password, by default null"),
+    PASSWORD("password", "123456", String.class, "user password, by default null"),
 
     POLL_INTERVAL("poll_interval", null, Long.class, ""),
 
@@ -247,7 +247,7 @@ public enum ClickHouseQueryParam implements DriverPropertyCreator {
 
     USE_UNCOMPRESSED_CACHE("use_uncompressed_cache", true, Boolean.class, "Whether to use the cache of uncompressed blocks."),
 
-    USER("user", null, String.class, "user name, by default - default"),
+    USER("user", "default", String.class, "user name, by default - default"),
 
     PREFERRED_BLOCK_SIZE_BYTES("preferred_block_size_bytes", null, Long.class, "Adaptively estimates number of required rows in a block."),
 

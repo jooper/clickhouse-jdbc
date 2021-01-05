@@ -31,7 +31,7 @@ public class BatchInsertsTest {
     @BeforeTest
     public void setUp() throws Exception {
         ClickHouseProperties properties = new ClickHouseProperties();
-        ClickHouseDataSource dataSource = new ClickHouseDataSource("jdbc:clickhouse://localhost:8123", properties);
+        ClickHouseDataSource dataSource = new ClickHouseDataSource("jdbc:clickhouse://10.158.2.15:8123", properties);
         connection = dataSource.getConnection();
         connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS test");
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -40,7 +40,7 @@ public class BatchInsertsTest {
 
     @AfterTest
     public void tearDown() throws Exception {
-        connection.createStatement().execute("DROP DATABASE test");
+//        connection.createStatement().execute("DROP DATABASE test");
     }
 
     @Test
@@ -69,6 +69,28 @@ public class BatchInsertsTest {
         Assert.assertEquals(rs.getInt("cnt"), 2);
 
         Assert.assertFalse(rs.next());
+
+    }
+
+
+    @Test
+    public void batchInsertTimestamp() throws Exception {
+
+        connection.createStatement().execute("DROP TABLE IF EXISTS test.batch_insert_timestamp");
+        connection.createStatement().execute(
+                "CREATE TABLE IF NOT EXISTS test.batch_insert_timestamp (s timestamp) ENGINE = TinyLog"
+        );
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO test.batch_insert_timestamp (s) VALUES (?)");
+
+        Timestamp tm = new Timestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2015/12/31 08:33:31.000")
+                .getTime());
+
+
+        statement.setTimestamp(1, tm);
+        statement.addBatch();
+
+        statement.executeBatch();
 
     }
 
